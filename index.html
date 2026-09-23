@@ -26,7 +26,12 @@
 <body><main class="app">
 <section id="home">
  <div class="hero"><div class="panda">🐼✨</div><h1>ฝึกคำศัพท์จีน</h1><p class="sub">เลือกชุดที่อยากฝึกวันนี้</p></div>
- <h2 class="level">HSK 1</h2><div id="setList" class="sets"></div>
+ <h2 class="level">HSK 1</h2>
+<div id="setList" class="sets">
+  <button class="set" onclick="openSet('hsk1-set1')">📕 ชุดที่ 1<small>129 คำ</small></button>
+  <button class="set" onclick="openSet('hsk1-set2')">📗 ชุดที่ 2<small>82 คำ</small></button>
+  <button class="set" onclick="openSet('hsk1-set3')">📘 ชุดที่ 3<small>211 คำ</small></button>
+</div>
  <div class="card"><button class="soft hist" style="width:100%" onclick="showAllHistory()">📊 ประวัติการฝึกทั้งหมด</button></div>
 </section>
 
@@ -62,7 +67,6 @@ function hide(){["home","setMenu","quiz","history"].forEach(x=>document.getEleme
 function home(){hide();document.getElementById("home").classList.remove("hidden")}
 function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function dayKey(){let d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-document.getElementById("setList").innerHTML=SETS.map((s,i)=>`<button class="set" onclick="openSet('${s.id}')">${["📕","📗","📘"][i]||"📙"} ${s.name}<small>${s.words.length} คำ</small></button>`).join("");
 function openSet(id){activeSet=SETS.find(s=>s.id===id);hide();document.getElementById("setMenu").classList.remove("hidden");document.getElementById("setTitle").textContent=`${activeSet.level} • ${activeSet.name}`}
 function start(mode,pool=activeSet.words,review=false){S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,review};hide();document.getElementById("quiz").classList.remove("hidden");render()}
 function startReview(){let x=store(),bad=activeSet.words.filter(w=>(x.words[activeSet.id+"|"+w.zh]?.wrong||0)>0);if(!bad.length){alert("ชุดนี้ยังไม่มีคำที่ตอบผิด 🎉");return}start("zh-th",bad,true)}
