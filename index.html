@@ -47,6 +47,7 @@
 
 .docs-grid{display:grid;gap:9px}.doc-card{background:#fff;border:1px solid #eee9fa;border-radius:17px;padding:13px 15px;box-shadow:0 6px 16px #5f598110;cursor:pointer;transition:transform .12s ease,background .12s ease}.doc-card:active{transform:scale(.985);background:#faf9fd}.doc-title{font-size:18px;font-weight:950;margin:0;color:#20223a}.doc-actions{display:flex;gap:7px;justify-content:flex-start}.doc-actions button,.doc-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:5px 11px;border-radius:9px;text-decoration:none;font-weight:800;font-size:12px;flex:0 0 auto}.doc-open{background:#f1f4fb;color:#56617c}.doc-download{background:#eef8f4;color:#47705f}.doc-image-preview{width:100%;border-radius:15px;border:1px solid #eee;margin:4px 0 10px;display:block}.doc-viewer-frame{width:100%;height:calc(100vh - 92px);min-height:720px;border:0;background:#fff}.doc-viewer-image{width:100%;height:auto;display:block}.doc-viewer-card{padding:0;overflow:hidden;border-radius:14px}.doc-viewer-title{font-weight:900;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#documentViewer{width:min(1440px,calc(100vw - 24px));margin-left:50%;transform:translateX(-50%)}#documentViewer>.top{padding-left:4px;padding-right:4px}.doc-actions{margin-top:2px}@media(max-width:700px){#documentViewer{width:100vw}.doc-viewer-frame{height:calc(100vh - 74px);min-height:620px}.doc-viewer-card{border-radius:0}.doc-viewer-title{font-size:14px}.docs-grid{gap:7px}.doc-card{width:94%;margin:0 auto;padding:11px 13px;border-radius:14px}.doc-title{font-size:15px}}
 .vocab-speak{border:0;background:#eef6ff;border-radius:999px;padding:7px 10px;margin-left:8px;font-size:18px;vertical-align:middle;cursor:pointer}.vocab-speak:active{transform:scale(.94)}
+.recall-speak{display:block;margin:0 auto 12px;border:0;background:#eef6ff;border-radius:999px;padding:9px 14px;font-weight:850;color:#40516b}.recall-input{width:100%;min-height:54px;border:2px solid #ddd7ee;border-radius:16px;padding:13px 15px;font:inherit;font-size:18px;outline:none;background:#fff}.recall-input:focus{border-color:#8175ff;box-shadow:0 0 0 3px #8175ff18}.recall-submit{width:100%;margin-top:10px;min-height:50px;border:0;border-radius:16px;background:#7b69ee;color:#fff;font-weight:900}.recall-actions{display:flex;margin-top:10px}.recall-actions button{width:100%;min-height:46px;border:0;border-radius:14px;font-weight:850}.recall-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.recall-nav button{min-height:46px;border:0;border-radius:14px;font-weight:850;background:#eeeaf8}.recall-nav .go{background:#7b69ee;color:#fff}.recall-ok{color:#17694e}.recall-wrong{color:#a33445}.recall-answer{margin-top:12px;padding:14px;border-radius:16px;background:#f4f1ff;line-height:1.7;text-align:left}
 </style></head>
 <body><main class="app">
 <section id="home">
@@ -97,9 +98,10 @@
 
 <section id="setMenu" class="hidden">
  <div class="top"><button class="back" onclick="openLevel(activeSet ? activeSet.level : 'HSK 1')">← กลับ</button><b id="setTitle"></b></div>
- <div class="card"><div style="text-align:center;font-weight:850">🔥 โหมดยาก • ตัวเลือกเน้นคำที่คล้ายกัน</div><div class="muted" style="text-align:center;margin-top:4px">เสียงใกล้กัน • ตัวจีนคล้ายกัน • ความหมายใกล้กัน</div></div><div class="card menu">
-  <button class="mode cn" onclick="start('zh-th')">🇨🇳 ถามศัพท์จีน<small>ตัวจีน → เลือกความหมายภาษาไทย</small></button>
-  <button class="mode th" onclick="start('th-zh')">🇹🇭 ถามศัพท์ภาษาไทย<small>ภาษาไทย → เลือกคำภาษาจีน</small></button>
+ <div class="card"><div style="text-align:center;font-weight:850">🧠 โหมดฝึกจำ</div><div class="muted" style="text-align:center;margin-top:4px">พิมพ์คำตอบเอง • ถ้าผิดให้ลองใหม่ • กดเฉลยได้เมื่อจำไม่ได้</div></div>
+ <div class="card menu">
+  <button class="mode cn" onclick="startRecall('recall-py')">🧠 โหมดฝึกจำ - จีน : พินอิน 🇨🇳<small>ให้ตัวจีนมา แล้วพิมพ์ Pinyin โดยไม่ต้องใส่เสียงวรรณยุกต์</small></button>
+  <button class="mode th" onclick="startRecall('recall-th')">🧠 โหมดฝึกจำ - จีน : แปลไทย 🇹🇭<small>ให้ตัวจีนมา แล้วพิมพ์คำแปลภาษาไทย</small></button>
   <button class="soft review" onclick="startReview()">🔁 ทบทวนคำที่เคยตอบผิด</button>
   <button class="soft hist" onclick="showSetHistory()">📊 ประวัติของชุดนี้</button>
  </div>
@@ -108,11 +110,18 @@
 <section id="quiz" class="hidden">
  <div class="top"><button class="back" onclick="openSet(activeSet.id)">← กลับ</button><div id="score" class="score"></div></div>
  <div class="progress"><div id="bar" class="bar"></div></div>
- <div class="card"><div class="game-top-controls"><div id="qmode" class="muted"></div><button id="quizPinyinBtn" class="pinyinbtn hidden" onclick="toggleQuizPinyin()">🔤 พินอิน: ปิด</button></div><div id="question" class="question"></div><div id="quizPinyin" class="s4-question-py hidden"></div><div id="options" class="options"></div><div id="feedback" class="feedback"></div><button id="next" class="next hidden" onclick="nextQ()">ข้อต่อไป →</button>
-<div class="game-nav"><button onclick="prevQuiz()">← ข้อก่อนหน้า</button><button class="pick" onclick="togglePicker('quizPicker')">🔢 เลือกข้อ</button><button class="go" onclick="nextQuizNav()">ข้อถัดไป →</button></div>
-<div id="quizPicker" class="picker hidden"><div class="picker-head"><span>เลือกข้อ</span><button onclick="togglePicker('quizPicker')">✕</button></div><div id="quizPickerGrid" class="picker-grid"></div></div></div>
+ <div class="card">
+  <div class="game-top-controls"><div id="qmode" class="muted"></div><button id="quizPinyinBtn" class="pinyinbtn" onclick="toggleRecallPinyin()">🔤 พินอิน: ปิด</button></div>
+  <div id="question" class="question"></div>
+  <div id="quizPinyin" class="s4-question-py hidden"></div>
+  <button id="recallSpeak" class="recall-speak" type="button" onclick="speakCurrentRecall()">🔊 ฟังเสียง</button>
+  <input id="recallInput" class="recall-input" type="text" autocomplete="off" spellcheck="false" placeholder="พิมพ์คำตอบที่นี่">
+  <button id="recallSubmit" class="recall-submit" type="button" onclick="submitRecall()">ตรวจคำตอบ</button>
+  <div id="feedback" class="feedback"></div>
+  <div class="recall-actions"><button id="recallReveal" class="answerbtn" type="button" onclick="revealRecall()">👀 เฉลย</button></div>
+  <div class="recall-nav"><button onclick="prevQuiz()">← ข้อก่อนหน้า</button><button class="go" onclick="nextQuizNav()">ข้อถัดไป →</button></div>
+ </div>
 </section>
-
 
 <section id="set4Menu" class="hidden">
  <div class="top"><button class="back" onclick="openLevel('HSK 1')">← กลับ</button><b>HSK 1 • ชุดที่ 4</b></div>
@@ -276,152 +285,43 @@ function openLevel(level){
 function comingSoon(level){alert(level+" กำลังเพิ่มเข้าเว็บต่อจาก HSK 2")}
 function openSet(id){activeSet=SETS.find(s=>s.id===id);hide();document.getElementById("setMenu").classList.remove("hidden");document.getElementById("setTitle").textContent=`${activeSet.level} • ${activeSet.name}`}
 let quizPinyinOn=false;
-function toggleQuizPinyin(){
- quizPinyinOn=!quizPinyinOn;
- let b=document.getElementById("quizPinyinBtn");
- b.textContent=quizPinyinOn?"🔤 พินอิน: เปิด":"🔤 พินอิน: ปิด";
- if(S&&S.cur&&S.mode==="th-zh") render();
- else renderQuizPinyin();
+function isRecallWordSet(){return !!activeSet&&isVocabSet()}
+function toggleRecallPinyin(){quizPinyinOn=!quizPinyinOn;renderRecall()}
+function normalizePinyin(v){return (v||"").toLowerCase().trim().replace(/ü/g,'u').replace(/[āáǎà]/g,'a').replace(/[ēéěè]/g,'e').replace(/[īíǐì]/g,'i').replace(/[ōóǒò]/g,'o').replace(/[ūúǔù]/g,'u').replace(/[ǖǘǚǜ]/g,'u').replace(/[1-5]/g,'').replace(/[\s\-·']/g,'')}
+function thaiAnswerKeys(th){return new Set((th||'').toLowerCase().replace(/[()（）]/g,' ').split(/[\/;,，、|]/).map(v=>v.replace(/\s+/g,' ').trim()).filter(Boolean))}
+function thaiAnswerMatches(input,th){let v=(input||'').trim().toLowerCase().replace(/\s+/g,' ');if(!v)return false;let keys=thaiAnswerKeys(th);for(const k of keys){if(v===k)return true}return false}
+function recallAnswerText(){return S.mode==='recall-py'?S.cur.py:S.cur.th}
+function recallExplanation(){return S.cur&&S.cur.desc?`<div class="explain-box"><b>💡 คำอธิบายเพิ่มเติม</b>${S.cur.desc}</div>`:''}
+function startRecall(mode,pool=activeSet.words,review=false){quizPinyinOn=false;S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,revealed:false,review,states:{}};hide();document.getElementById('quiz').classList.remove('hidden');renderRecall()}
+function startReview(){let x=store(),bad=activeSet.words.filter(w=>(x.words[activeSet.id+'|'+w.zh]?.wrong||0)>0);if(!bad.length){alert('ชุดนี้ยังไม่มีคำที่ตอบผิด 🎉');return}startRecall('recall-th',bad,true)}
+function quizSaveState(){if(!S||!S.pool||!S.pool.length)return;let input=document.getElementById('recallInput');S.states[S.i]={answered:!!S.answered,revealed:!!S.revealed,feedback:document.getElementById('feedback').innerHTML,input:input?input.value:''}}
+function quizRestoreState(){let st=S.states&&S.states[S.i];if(!st)return;S.answered=!!st.answered;S.revealed=!!st.revealed;let input=document.getElementById('recallInput');if(input)input.value=st.input||'';document.getElementById('feedback').innerHTML=st.feedback||'';if(S.answered||S.revealed)document.getElementById('recallInput').disabled=true}
+function prevQuiz(){if(S.i>0){quizSaveState();S.i--;renderRecall();quizRestoreState()}}
+function nextQuizNav(){if(S.i<S.pool.length-1){quizSaveState();S.i++;renderRecall();quizRestoreState()}else{alert(`จบรอบแล้ว 🎉\nถูก ${S.c} ข้อ • ผิด ${S.w} ข้อ`);openSet(activeSet.id)}}
+function renderRecall(){
+ if(!S.pool||!S.pool.length){alert('ชุดนี้ยังไม่มีข้อมูล');openSet(activeSet.id);return}
+ S.cur=S.pool[S.i];S.answered=!!(S.states[S.i]&&S.states[S.i].answered);S.revealed=!!(S.states[S.i]&&S.states[S.i].revealed);
+ let q=document.getElementById('question'),py=document.getElementById('quizPinyin'),input=document.getElementById('recallInput'),fb=document.getElementById('feedback');
+ q.className='question';q.textContent=S.cur.zh;
+ document.getElementById('qmode').textContent=S.review?'🔁 ทบทวนคำที่เคยตอบผิด':(S.mode==='recall-py'?'🧠 จีน : พินอิน':'🧠 จีน : แปลไทย');
+ document.getElementById('quizPinyinBtn').classList.remove('hidden');document.getElementById('quizPinyinBtn').textContent='🔤 พินอิน: '+(quizPinyinOn?'เปิด':'ปิด');document.getElementById('quizPinyinBtn').classList.toggle('on',quizPinyinOn);
+ py.textContent=S.cur.py||'';py.classList.toggle('hidden',!quizPinyinOn);
+ input.placeholder=S.mode==='recall-py'?'พิมพ์ Pinyin โดยไม่ต้องใส่เสียงวรรณยุกต์':'พิมพ์คำแปลภาษาไทย';
+ input.value=(S.states[S.i]&&S.states[S.i].input)||'';input.disabled=S.answered||S.revealed;
+ document.getElementById('recallSubmit').disabled=S.answered||S.revealed;
+ document.getElementById('recallSpeak').disabled=false;
+ fb.innerHTML=(S.states[S.i]&&S.states[S.i].feedback)||'';
+ document.getElementById('recallReveal').disabled=S.answered||S.revealed;
+ document.getElementById('score').textContent=`✅ ${S.c}  ❌ ${S.w} • ${S.i+1}/${S.pool.length}`;document.getElementById('bar').style.width=(S.i/S.pool.length*100)+'%';
+ input.onkeydown=e=>{if(e.key==='Enter')submitRecall()};
 }
-function renderQuizPinyin(){
- let box=document.getElementById("quizPinyin"),btn=document.getElementById("quizPinyinBtn");
- let allow=activeSet&&["hsk2-set3","hsk2-set4","hsk3-set6","hsk3-set7","hsk4-set11","hsk4-set12"].includes(activeSet.id);
- if(!allow){btn.classList.add("hidden");box.classList.add("hidden");return}
- btn.classList.remove("hidden");
- if(quizPinyinOn&&S&&S.cur&&S.cur.py&&S.mode==="zh-th"){box.textContent=S.cur.py;box.classList.remove("hidden")}
- else box.classList.add("hidden");
-}
-function start(mode,pool=activeSet.words,review=false){quizPinyinOn=false;S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,review,states:{}};hide();document.getElementById("quiz").classList.remove("hidden");render()}
-function startReview(){let x=store(),bad=activeSet.words.filter(w=>(x.words[activeSet.id+"|"+w.zh]?.wrong||0)>0);if(!bad.length){alert("ชุดนี้ยังไม่มีคำที่ตอบผิด 🎉");return}start("zh-th",bad,true)}
+function submitRecall(){if(S.answered||S.revealed)return;let input=document.getElementById('recallInput'),v=input.value.trim(),ok=S.mode==='recall-py'?normalizePinyin(v)===normalizePinyin(S.cur.py):thaiAnswerMatches(v,S.cur.th);if(!v)return;let fb=document.getElementById('feedback');if(!ok){S.w++;fb.innerHTML='<div class="recall-wrong">❌ ยังไม่ถูก ลองพิมพ์ใหม่</div>';recordRecall(false);input.select();return}S.answered=true;S.c++;fb.innerHTML=`<div class="recall-ok">✅ ถูกต้อง</div><div class="recall-answer"><b>เฉลย</b><br>${S.cur.zh}<br><span class="py">${S.cur.py||''}</span><br>${S.cur.th}${recallExplanation()}</div>`;input.disabled=true;document.getElementById('recallSubmit').disabled=true;document.getElementById('recallReveal').disabled=true;recordRecall(true);quizSaveState()}
+function revealRecall(){if(S.answered||S.revealed)return;S.revealed=true;document.getElementById('recallInput').disabled=true;document.getElementById('recallSubmit').disabled=true;document.getElementById('recallReveal').disabled=true;document.getElementById('feedback').innerHTML=`<div>👀 เฉลย</div><div class="recall-answer"><b>${S.cur.zh}</b><br><span class="py">${S.cur.py||''}</span><br>${S.cur.th}${recallExplanation()}</div>`;recordRecall(false,true);quizSaveState()}
+function recordRecall(ok,revealed=false){let x=store(),d=dayKey(),sid=activeSet.id;if(!x.days[d])x.days[d]={};if(!x.days[d][sid])x.days[d][sid]={answered:0,correct:0,wrong:0,modes:{'zh-th':{answered:0,correct:0},'th-zh':{answered:0,correct:0}}};let z=x.days[d][sid];z.answered++;if(ok)z.correct++;else z.wrong++;let k=sid+'|'+S.cur.zh;if(!x.words[k])x.words[k]={correct:0,wrong:0};if(ok)x.words[k].correct++;else x.words[k].wrong++;save(x)}
+function speakCurrentRecall(){if(S&&S.cur)speakChinese(S.cur.zh)}
+function isVocabSet(){if(!activeSet)return false;return activeSet.id==='hsk1-set1'||activeSet.id==='hsk1-set2'||activeSet.id==='hsk1-set3'||['hsk2-set1','hsk2-set2'].includes(activeSet.id)||/^hsk3-set[1-5]$/.test(activeSet.id)||/^hsk4-set(?:[1-9]|10)$/.test(activeSet.id)}
+function speakChinese(text){if(!text||!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=.68;const vs=window.speechSynthesis.getVoices();const female=vs.find(x=>/^zh(-|_)?CN/i.test(x.lang)&&/(female|女|xiaoxiao|tingting|yaoyao|meijia|huihui)/i.test(x.name));const v=female||vs.find(x=>/^zh(-|_)?CN/i.test(x.lang))||vs.find(x=>/^zh/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u)}
 
-function grams(s){
- s=(s||"").toLowerCase().replace(/\s+/g,"").replace(/[\/,()\-–—]/g,"");
- let g=new Set();
- for(let n=1;n<=2;n++) for(let i=0;i<=s.length-n;i++) g.add(s.slice(i,i+n));
- return g;
-}
-function sim(a,b){
- let A=grams(a),B=grams(b),hit=0;
- A.forEach(x=>{if(B.has(x))hit++});
- return hit/Math.max(1,Math.sqrt(A.size*B.size));
-}
-function hardDistractors(w){
- let candidates=activeSet.words.filter(x=>x.zh!==w.zh);
- let visible=x=>S.mode==="zh-th"?x.th:x.zh;
- let norm=v=>(v||"").toLowerCase().replace(/\s+/g,"").replace(/[\/,()\-–—?.？]/g,"");
- let correctVisible=norm(visible(w));
- let scored=candidates.map(x=>{
-   let p=sim(w.py,x.py), z=sim(w.zh,x.zh), t=sim(w.th,x.th);
-   let score=S.mode==="zh-th" ? p*0.42+z*0.23+t*0.35 : t*0.42+p*0.28+z*0.30;
-   if(w.zh[0] && x.zh[0]===w.zh[0]) score+=0.13;
-   if(w.zh.slice(-1) && x.zh.slice(-1)===w.zh.slice(-1)) score+=0.10;
-   return {x,score};
- }).sort((a,b)=>b.score-a.score);
- let picked=[],seen=new Set([correctVisible]);
- for(const item of scored){
-   let v=norm(visible(item.x));
-   if(!v || seen.has(v)) continue;
-   seen.add(v); picked.push(item.x);
-   if(picked.length===2) break;
- }
- return picked;
-}
-
-
-function quizSaveState(){
- if(!S||!S.pool||!S.pool.length)return;
- let st=S.states||(S.states={});
- st[S.i]={feedback:document.getElementById("feedback").innerHTML,answered:!!S.answered,nextVisible:!document.getElementById("next").classList.contains("hidden")}
-}
-function quizRestoreState(){
- let st=S.states&&S.states[S.i];
- if(!st)return;
- S.answered=!!st.answered;
- document.getElementById("feedback").innerHTML=st.feedback||"";
- if(st.nextVisible)document.getElementById("next").classList.remove("hidden")
-}
-function renderQuizPicker(){
- let g=document.getElementById("quizPickerGrid");if(!g)return;g.innerHTML="";
- S.pool.forEach((_,i)=>{let b=document.createElement("button");b.textContent=i+1;if(i===S.i)b.classList.add("current");b.onclick=()=>jumpQuiz(i);g.appendChild(b)})
-}
-function prevQuiz(){if(S.i>0){quizSaveState();S.i--;render();quizRestoreState()}}
-function nextQuizNav(){if(S.i<S.pool.length-1){quizSaveState();S.i++;render();quizRestoreState()}}
-function jumpQuiz(i){if(i>=0&&i<S.pool.length){quizSaveState();S.i=i;document.getElementById("quizPicker").classList.add("hidden");render();quizRestoreState()}}
-
-function isVocabSet(){
- if(!activeSet)return false;
- return activeSet.id==="hsk1-set1"||activeSet.id==="hsk1-set2"||activeSet.id==="hsk1-set3"||
-        ["hsk2-set1","hsk2-set2"].includes(activeSet.id)||
-        /^hsk3-set[1-5]$/.test(activeSet.id)||/^hsk4-set(?:[1-9]|10)$/.test(activeSet.id);
-}
-function speakChinese(text){
- if(!text||!("speechSynthesis" in window))return;
- window.speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=.82;
- const vs=window.speechSynthesis.getVoices();
- const v=vs.find(x=>/^zh(-|_)?CN/i.test(x.lang))||vs.find(x=>/^zh/i.test(x.lang));
- if(v)u.voice=v;window.speechSynthesis.speak(u);
-}
-function render(){
- if(S.i>=S.pool.length){alert(`จบรอบแล้ว 🎉\nถูก ${S.c} ข้อ • ผิด ${S.w} ข้อ`);openSet(activeSet.id);return}
- let w=S.pool[S.i];S.cur=w;S.answered=false;renderQuizPinyin();let q=document.getElementById("question"),o=document.getElementById("options");
- q.className="question"+(S.mode==="th-zh"?" thai":"");q.textContent=S.mode==="zh-th"?w.zh:w.th;
- if(isVocabSet()&&S.mode==="zh-th"){let sb=document.createElement("button");sb.className="vocab-speak";sb.type="button";sb.textContent="🔊";sb.setAttribute("aria-label","ฟังเสียงภาษาจีน");sb.onclick=(e)=>{e.stopPropagation();speakChinese(w.zh)};q.appendChild(sb)}
- document.getElementById("qmode").textContent=S.review?"🔁 ทบทวนคำที่เคยผิด":(S.mode==="zh-th"?"🇨🇳 จีน → ไทย":"🇹🇭 ไทย → จีน");
- document.getElementById("feedback").innerHTML="";document.getElementById("next").classList.add("hidden");
- let choices=shuffle([w,...hardDistractors(w)]);
- o.innerHTML="";choices.forEach((x,i)=>{let b=document.createElement("button");b.className="opt";b.dataset.zh=x.zh;b.dataset.py=x.py;b.dataset.th=x.th;b.innerHTML=`<b>${String.fromCharCode(65+i)}.</b> ${S.mode==="zh-th"?x.th:x.zh}${(quizPinyinOn&&S.mode==="th-zh"&&["hsk2-set3","hsk2-set4","hsk3-set6","hsk3-set7","hsk4-set11","hsk4-set12"].includes(activeSet.id))?`<span class="pysub">${x.py||""}</span>`:""}`;if(isVocabSet()&&S.mode==="th-zh"){let sb=document.createElement("button");sb.className="vocab-speak";sb.type="button";sb.textContent="🔊";sb.setAttribute("aria-label","ฟังเสียงภาษาจีน");sb.onclick=(e)=>{e.stopPropagation();speakChinese(x.zh)};b.appendChild(sb)}b.onclick=()=>answer(b,x);o.appendChild(b)});topbar()
-renderQuizPicker();}
-function thaiAnswerKeys(th){
- return new Set((th||"").toLowerCase()
-   .replace(/[()（）]/g," ")
-   .split(/[\/;,，、|]/)
-   .map(v=>v.replace(/\s+/g," ").trim())
-   .filter(v=>v.length>=2));
-}
-function sameAcceptedMeaning(a,b){
- if(!a||!b)return false;
- if(a.zh===b.zh)return true;
- // คำที่เป็นรูปแบบเดียวกัน/คำพ้องที่กำหนดให้ตอบแทนกันได้
- const equivalentGroups=[
-   ["这里","这儿"],["那里","那儿"],["哪里","哪儿"]
- ];
- if(equivalentGroups.some(g=>g.includes(a.zh)&&g.includes(b.zh)))return true;
- // ในโหมด ไทย→จีน ถ้าคำศัพท์จีนหลายคำมีคำแปลไทยเดียวกัน ให้ถือว่าถูกทุกคำ
- if(S&&S.mode==="th-zh"){
-   const A=thaiAnswerKeys(a.th),B=thaiAnswerKeys(b.th);
-   for(const k of A) if(B.has(k)) return true;
- }
- return false;
-}
-function answer(btn,x){
- if(S.answered)return;
- S.answered=true;
- let ok=sameAcceptedMeaning(x,S.cur);
- ok?S.c++:S.w++;
- document.querySelectorAll(".opt").forEach(b=>{
-   b.disabled=true;
-   let isCorrect=sameAcceptedMeaning({zh:b.dataset.zh,th:b.dataset.th},S.cur);
-   if(isCorrect)b.classList.add("good");
-   if(!isCorrect){
-     let extra=S.mode==="zh-th"
-       ? `${b.dataset.zh} <span class="py">${b.dataset.py}</span>`
-       : `<span class="py">${b.dataset.py}</span> = ${b.dataset.th}`;
-     b.innerHTML+=`<span class="reveal">${extra}</span>`;
-   }
- });
- if(!ok)btn.classList.add("bad");
- let accepted=[...document.querySelectorAll(".opt")].filter(b=>sameAcceptedMeaning({zh:b.dataset.zh,th:b.dataset.th},S.cur));
- let acceptedLine=(S.mode==="th-zh"&&accepted.length>1)
-   ? "<br>✅ คำตอบที่ถูก: "+accepted.map(b=>`${b.dataset.zh} <span class="py">${b.dataset.py||""}</span>`).join(" / ")
-   : `<br>${S.cur.zh} <span class="py">${S.cur.py}</span> = ${S.cur.th}`;
- document.getElementById("feedback").innerHTML=(ok?"✅ ถูกต้อง":"❌ ยังไม่ใช่")+acceptedLine+(S.cur.desc?`<div class="explain-box"><b>💡 คำอธิบายเพิ่มเติม</b>${S.cur.desc}</div>`:"");
- record(ok);
- document.getElementById("next").classList.remove("hidden");
- topbar();
-}
-function record(ok){let x=store(),d=dayKey(),sid=activeSet.id;if(!x.days[d])x.days[d]={};if(!x.days[d][sid])x.days[d][sid]={answered:0,correct:0,wrong:0,modes:{"zh-th":{answered:0,correct:0},"th-zh":{answered:0,correct:0}}};let z=x.days[d][sid];z.answered++;ok?z.correct++:z.wrong++;z.modes[S.mode].answered++;if(ok)z.modes[S.mode].correct++;let k=sid+"|"+S.cur.zh;if(!x.words[k])x.words[k]={correct:0,wrong:0};ok?x.words[k].correct++:x.words[k].wrong++;save(x)}
-function nextQ(){S.i++;render()}function topbar(){document.getElementById("score").textContent=`✅ ${S.c}  ❌ ${S.w} • ${Math.min(S.i+1,S.pool.length)}/${S.pool.length}`;document.getElementById("bar").style.width=(S.i/S.pool.length*100)+"%"}
 function showSetHistory(){showHistory(activeSet.id)}function showAllHistory(){activeSet=null;showHistory(null)}
 function showHistory(filter){hide();document.getElementById("history").classList.remove("hidden");document.getElementById("histTitle").textContent=filter?`📊 ${SETS.find(s=>s.id===filter).name}`:"📊 ประวัติทั้งหมด";document.getElementById("histBack").onclick=filter?()=>openSet(filter):home;let x=store(),rows=[],ta=0,tc=0;Object.entries(x.days).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([d,sets])=>{Object.entries(sets).forEach(([sid,v])=>{if(filter&&sid!==filter)return;let set=SETS.find(s=>s.id===sid);if(!set)return;ta+=v.answered;tc+=v.correct;rows.push({d,set,v})})});document.getElementById("totalA").textContent=ta;document.getElementById("totalC").textContent=tc;document.getElementById("acc").textContent=ta?Math.round(tc/ta*100)+"%":"0%";document.getElementById("historyRows").innerHTML=rows.length?rows.map(r=>{let [y,m,d]=r.d.split("-"),v=r.v;return `<div class="row"><b>📅 ${d}/${m}/${y} • ${r.set.name}</b><div>ทำ ${v.answered} • ✅ ${v.correct} • ❌ ${v.wrong} • ${Math.round(v.correct/v.answered*100)}%</div><div class="muted">จีน→ไทย ${v.modes["zh-th"].correct}/${v.modes["zh-th"].answered} • ไทย→จีน ${v.modes["th-zh"].correct}/${v.modes["th-zh"].answered}</div></div>`}).join(""):`<div class="empty">ยังไม่มีประวัติการฝึก 🐼</div>`}
 function exportData(){let b=new Blob([localStorage.getItem(KEY)||'{"days":{},"words":{}}'],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="chinese-quiz-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
@@ -537,10 +437,10 @@ function renderSentence(){
  sentCount.textContent=`ข้อ ${SG.pos+1}/${SG.order.length}`;sentBar.style.width=((SG.pos+1)/Math.max(1,SG.order.length)*100)+"%";
  sentLevelBtn.textContent=sentenceLevelIcon(SG.level)+" "+SG.level+" ▼";
  sentPinyinBtn.textContent="🔤 พินอิน: "+(st.pinyin?"เปิด":"ปิด");sentPinyinBtn.classList.toggle("on",st.pinyin);
- sentThai.textContent="🇹🇭 "+q.th;sentBuild.innerHTML="";
+ sentThai.innerHTML="🇹🇭 "+q.th+` <button class="recall-speak sentence-speak-inline" type="button" onclick="speakChinese(${JSON.stringify(q.zh)})">🔊 ฟังเสียงประโยค</button>`;sentBuild.innerHTML="";
  st.chosen.forEach((k,p)=>{let t=st.cards.find(x=>x.key===k),btn=sentCard(t,st.pinyin);btn.onclick=()=>{st.chosen.splice(p,1);st.checked="";renderSentence()};sentBuild.appendChild(btn)});
  sentBank.innerHTML="";st.cards.forEach(t=>{let btn=sentCard(t,st.pinyin);if(st.chosen.includes(t.key))btn.classList.add("used");btn.onclick=()=>{if(!st.chosen.includes(t.key)&&st.chosen.length<(q.tokens||[]).length){st.chosen.push(t.key);autoCheckSentence();renderSentence()}};sentBank.appendChild(btn)});
- sentFeedback.innerHTML=st.checked;sentAnswer.innerHTML=st.answer?`<div class="sentence-answer"><b>👀 เฉลย</b><br>${q.zh}<br><span class="py">${q.py}</span><br>${q.th}</div>`:"";
+ sentFeedback.innerHTML=st.checked;sentAnswer.innerHTML=st.answer?`<div class="sentence-answer"><b>👀 เฉลย</b><br>${q.zh} <button class="recall-speak sentence-speak-inline" type="button" onclick="speakChinese(${JSON.stringify(q.zh)})">🔊</button><br><span class="py">${q.py}</span><br>${q.th}</div>`:"";
  makePicker("sentPickerGrid",SG.order.length,SG.pos,jumpSentence)
 }
 function cycleSentenceLevel(){let a=["ง่าย","กลาง","ยาก"],n=(a.indexOf(SG.level)+1)%3;SG.level=a[n];SG.order=sentenceFreshOrder(SG.level);SG.pos=0;SG.states={};renderSentence()}
@@ -607,7 +507,7 @@ function renderSet4(){
  s4Score.textContent=`ข้อ ${S4.pos+1}/${S4.order.length} • ✅ ${S4.c} ❌ ${S4.w}`;
  s4Bar.style.width=((S4.pos+1)/Math.max(1,S4.order.length)*100)+"%";
  s4Question.className="question"+(S4.mode==="th-zh"?" thai":"");
- s4Question.textContent=S4.mode==="zh-th"?q.zh:q.th;
+ s4Question.innerHTML=S4.mode==="zh-th"?`${q.zh} <button class="recall-speak sentence-speak-inline" type="button" onclick="speakChinese(${JSON.stringify(q.zh)})">🔊</button>`:q.th;
  if(S4.mode==="zh-th"&&S4.pinyin){s4QuestionPy.textContent=q.py;s4QuestionPy.classList.remove("hidden")}
  else{s4QuestionPy.textContent="";s4QuestionPy.classList.add("hidden")}
  s4Options.innerHTML="";
@@ -625,8 +525,8 @@ function renderSet4(){
    s4Options.appendChild(b)
  });
  s4Feedback.innerHTML=st.answered?
-   (st.chosen===q.zh?`✅ ถูกต้อง<br><b>${q.zh}</b> <span class="py">${q.py}</span> = ${q.th}`:
-   `❌ ยังไม่ถูก<br><b>${q.zh}</b> <span class="py">${q.py}</span> = ${q.th}`):"";
+   (st.chosen===q.zh?`✅ ถูกต้อง<br><b>${q.zh}</b> <button class="recall-speak sentence-speak-inline" type="button" onclick="speakChinese(${JSON.stringify(q.zh)})">🔊</button> <span class="py">${q.py}</span> = ${q.th}`:
+   `❌ ยังไม่ถูก<br><b>${q.zh}</b> <button class="recall-speak sentence-speak-inline" type="button" onclick="speakChinese(${JSON.stringify(q.zh)})">🔊</button> <span class="py">${q.py}</span> = ${q.th}`):"";
  s4PickerTitle.textContent=`เลือกข้อ • ${S4.review?"ทบทวน":S4.level} (${S4.order.length} ข้อ)`;
  renderSet4Picker()
 }
