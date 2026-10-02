@@ -94,6 +94,11 @@
  <div class="top"><button class="back" onclick="home()">← กลับ</button><b id="levelTitle">คำศัพท์</b></div>
  <div class="hero compact-hero"><div class="panda">🐼</div><h1 id="levelHeading">HSK</h1><p class="sub">เลือกชุดที่อยากฝึก</p></div>
  <div id="levelSets" class="sets"></div>
+ <div class="card" style="margin-top:16px">
+  <div style="text-align:center;font-weight:850">🧠 โหมดฝึกจำ</div>
+  <div class="muted" style="text-align:center;margin-top:4px">รวมคำศัพท์ทั้งหมดของระดับนี้</div>
+ </div>
+ <div id="levelRecallModes" class="card menu"></div>
 </section>
 
 <section id="setMenu" class="hidden">
@@ -252,6 +257,16 @@ function openLevel(level){
  document.getElementById("levelTitle").textContent="🐼 คำศัพท์ • "+level;
  document.getElementById("levelHeading").textContent=level;
  let box=document.getElementById("levelSets");box.innerHTML="";
+ let recallBox=document.getElementById("levelRecallModes");recallBox.innerHTML="";
+ const recallWordsByLevel={
+  "HSK 1":["hsk1-set1","hsk1-set2","hsk1-set3"],
+  "HSK 2":["hsk2-set1","hsk2-set2"],
+  "HSK 3":["hsk3-set1","hsk3-set2","hsk3-set3","hsk3-set4","hsk3-set5"],
+  "HSK 4":["hsk4-set1","hsk4-set2","hsk4-set3","hsk4-set4","hsk4-set5","hsk4-set6","hsk4-set7","hsk4-set8","hsk4-set9","hsk4-set10"]
+ };
+ const makeRecallMode=(label,sub,mode)=>{let b=document.createElement("button");b.className="mode "+(mode==='recall-py'?'cn':'th');b.innerHTML=label+`<small>${sub}</small>`;b.onclick=()=>startLevelRecall(level,mode,recallWordsByLevel[level]||[]);recallBox.appendChild(b)};
+ makeRecallMode("🧠 โหมดฝึกจำ - จีน : พินอิน 🇨🇳","ให้ตัวจีนมา แล้วพิมพ์ Pinyin โดยไม่ต้องใส่เสียงวรรณยุกต์","recall-py");
+ makeRecallMode("🧠 โหมดฝึกจำ - จีน : แปลไทย 🇹🇭","ให้ตัวจีนมา แล้วพิมพ์คำแปลภาษาไทย","recall-th");
  if(level==="HSK 1"){
   [
    ["📕 ชุดที่ 1","150 คำ",()=>openSet("hsk1-set1")],
@@ -292,15 +307,24 @@ function thaiAnswerKeys(th){return new Set((th||'').toLowerCase().replace(/[()�
 function thaiAnswerMatches(input,th){let v=(input||'').trim().toLowerCase().replace(/\s+/g,' ');if(!v)return false;let keys=thaiAnswerKeys(th);for(const k of keys){if(v===k)return true}return false}
 function recallAnswerText(){return S.mode==='recall-py'?S.cur.py:S.cur.th}
 function recallExplanation(){return S.cur&&S.cur.desc?`<div class="explain-box"><b>💡 คำอธิบายเพิ่มเติม</b>${S.cur.desc}</div>`:''}
-function startRecall(mode,pool=activeSet.words,review=false){quizPinyinOn=false;S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,revealed:false,review,states:{}};hide();document.getElementById('quiz').classList.remove('hidden');renderRecall()}
+let activeRecallLevel=null;
+function startLevelRecall(level,mode,setIds){
+ activeRecallLevel=level;
+ let pool=[];
+ setIds.forEach(id=>{let set=SETS.find(x=>x.id===id);if(set)pool.push(...set.words.map(w=>({...w,_setId:id})))});
+ quizPinyinOn=false;S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,revealed:false,review:false,states:{}};
+ hide();document.getElementById('quiz').classList.remove('hidden');renderRecall();
+}
+function startRecall(mode,pool=activeSet.words,review=false){activeRecallLevel=null;quizPinyinOn=false;S={mode,pool:shuffle(pool),i:0,c:0,w:0,answered:false,revealed:false,review,states:{}};hide();document.getElementById('quiz').classList.remove('hidden');renderRecall()}
 function startReview(){let x=store(),bad=activeSet.words.filter(w=>(x.words[activeSet.id+'|'+w.zh]?.wrong||0)>0);if(!bad.length){alert('ชุดนี้ยังไม่มีคำที่ตอบผิด 🎉');return}startRecall('recall-th',bad,true)}
 function quizSaveState(){if(!S||!S.pool||!S.pool.length)return;let input=document.getElementById('recallInput');S.states[S.i]={answered:!!S.answered,revealed:!!S.revealed,feedback:document.getElementById('feedback').innerHTML,input:input?input.value:''}}
 function quizRestoreState(){let st=S.states&&S.states[S.i];if(!st)return;S.answered=!!st.answered;S.revealed=!!st.revealed;let input=document.getElementById('recallInput');if(input)input.value=st.input||'';document.getElementById('feedback').innerHTML=st.feedback||'';if(S.answered||S.revealed)document.getElementById('recallInput').disabled=true}
 function prevQuiz(){if(S.i>0){quizSaveState();S.i--;renderRecall();quizRestoreState()}}
-function nextQuizNav(){if(S.i<S.pool.length-1){quizSaveState();S.i++;renderRecall();quizRestoreState()}else{alert(`จบรอบแล้ว 🎉\nถูก ${S.c} ข้อ • ผิด ${S.w} ข้อ`);openSet(activeSet.id)}}
+function nextQuizNav(){if(S.i<S.pool.length-1){quizSaveState();S.i++;renderRecall();quizRestoreState()}else{alert(`จบรอบแล้ว 🎉\nถูก ${S.c} ข้อ • ผิด ${S.w} ข้อ`);activeRecallLevel?openLevel(activeRecallLevel):openSet(activeSet.id)}}
 function renderRecall(){
  if(!S.pool||!S.pool.length){alert('ชุดนี้ยังไม่มีข้อมูล');openSet(activeSet.id);return}
  S.cur=S.pool[S.i];S.answered=!!(S.states[S.i]&&S.states[S.i].answered);S.revealed=!!(S.states[S.i]&&S.states[S.i].revealed);
+ document.querySelector('#quiz .back').onclick=()=>activeRecallLevel?openLevel(activeRecallLevel):openSet(activeSet.id);
  let q=document.getElementById('question'),py=document.getElementById('quizPinyin'),input=document.getElementById('recallInput'),fb=document.getElementById('feedback');
  q.className='question';q.textContent=S.cur.zh;
  document.getElementById('qmode').textContent=S.review?'🔁 ทบทวนคำที่เคยตอบผิด':(S.mode==='recall-py'?'🧠 จีน : พินอิน':'🧠 จีน : แปลไทย');
@@ -317,7 +341,7 @@ function renderRecall(){
 }
 function submitRecall(){if(S.answered||S.revealed)return;let input=document.getElementById('recallInput'),v=input.value.trim(),ok=S.mode==='recall-py'?normalizePinyin(v)===normalizePinyin(S.cur.py):thaiAnswerMatches(v,S.cur.th);if(!v)return;let fb=document.getElementById('feedback');if(!ok){S.w++;fb.innerHTML='<div class="recall-wrong">❌ ยังไม่ถูก ลองพิมพ์ใหม่</div>';recordRecall(false);input.select();return}S.answered=true;S.c++;fb.innerHTML=`<div class="recall-ok">✅ ถูกต้อง</div><div class="recall-answer"><b>เฉลย</b><br>${S.cur.zh}<br><span class="py">${S.cur.py||''}</span><br>${S.cur.th}${recallExplanation()}</div>`;input.disabled=true;document.getElementById('recallSubmit').disabled=true;document.getElementById('recallReveal').disabled=true;recordRecall(true);quizSaveState()}
 function revealRecall(){if(S.answered||S.revealed)return;S.revealed=true;document.getElementById('recallInput').disabled=true;document.getElementById('recallSubmit').disabled=true;document.getElementById('recallReveal').disabled=true;document.getElementById('feedback').innerHTML=`<div>👀 เฉลย</div><div class="recall-answer"><b>${S.cur.zh}</b><br><span class="py">${S.cur.py||''}</span><br>${S.cur.th}${recallExplanation()}</div>`;recordRecall(false,true);quizSaveState()}
-function recordRecall(ok,revealed=false){let x=store(),d=dayKey(),sid=activeSet.id;if(!x.days[d])x.days[d]={};if(!x.days[d][sid])x.days[d][sid]={answered:0,correct:0,wrong:0,modes:{'zh-th':{answered:0,correct:0},'th-zh':{answered:0,correct:0}}};let z=x.days[d][sid];z.answered++;if(ok)z.correct++;else z.wrong++;let k=sid+'|'+S.cur.zh;if(!x.words[k])x.words[k]={correct:0,wrong:0};if(ok)x.words[k].correct++;else x.words[k].wrong++;save(x)}
+function recordRecall(ok,revealed=false){let x=store(),d=dayKey(),sid=S.cur&&S.cur._setId?S.cur._setId:(activeSet&&activeSet.id);if(!x.days[d])x.days[d]={};if(!x.days[d][sid])x.days[d][sid]={answered:0,correct:0,wrong:0,modes:{'zh-th':{answered:0,correct:0},'th-zh':{answered:0,correct:0}}};let z=x.days[d][sid];z.answered++;if(ok)z.correct++;else z.wrong++;let k=sid+'|'+S.cur.zh;if(!x.words[k])x.words[k]={correct:0,wrong:0};if(ok)x.words[k].correct++;else x.words[k].wrong++;save(x)}
 function speakCurrentRecall(){if(S&&S.cur)speakChinese(S.cur.zh)}
 function isVocabSet(){if(!activeSet)return false;return activeSet.id==='hsk1-set1'||activeSet.id==='hsk1-set2'||activeSet.id==='hsk1-set3'||['hsk2-set1','hsk2-set2'].includes(activeSet.id)||/^hsk3-set[1-5]$/.test(activeSet.id)||/^hsk4-set(?:[1-9]|10)$/.test(activeSet.id)}
 function speakChinese(text){if(!text||!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=.68;const vs=window.speechSynthesis.getVoices();const female=vs.find(x=>/^zh(-|_)?CN/i.test(x.lang)&&/(female|女|xiaoxiao|tingting|yaoyao|meijia|huihui)/i.test(x.name));const v=female||vs.find(x=>/^zh(-|_)?CN/i.test(x.lang))||vs.find(x=>/^zh/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u)}
