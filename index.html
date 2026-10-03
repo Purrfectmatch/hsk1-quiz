@@ -313,7 +313,6 @@ function recallAudioHTML(w){return `<button class="recall-speak" type="button" o
 function renderRecall(){
  if(!R.pool.length){alert("ยังไม่มีคำศัพท์ในระดับนี้");openLevel(R.level);return}
  const w=R.pool[R.i],st=recallState();
- document.getElementById("recallLevel").textContent=R.level;
  document.getElementById("recallModeTitle").textContent=R.mode==="recall-py"?"🧠 โหมดฝึกจำ - จีน : พินอิน 🇨🇳":"🧠 โหมดฝึกจำ - จีน : แปลไทย 🇹🇭";
  const q=document.getElementById("recallQuestion");q.textContent=w.zh;
  const pin=document.getElementById("recallPinBtn");pin.textContent="🔤 พินอิน: "+(st.showPin?"เปิด":"ปิด");pin.classList.toggle("on",!!st.showPin);
@@ -421,7 +420,7 @@ function isSentenceSet(){
  return ["hsk1-set4","hsk2-set3","hsk2-set4","hsk3-set6","hsk3-set7","hsk4-set11","hsk4-set12"].includes(activeSet.id);
 }
 function audioButton(text,label="🔊 ฟังเสียง") {
- const b=document.createElement("button"); b.type="button"; b.className="recall-speak sentence-speak-inline"; b.textContent=label; b.onclick=(e)=>{e.stopPropagation();speakChinese(text)}; return b;
+ const b=document.createElement("button"); b.type="button"; b.className="recall-speak quiz-audio sentence-speak-inline"; b.textContent=label; b.onclick=(e)=>{e.stopPropagation();speakChinese(text)}; return b;
 }
 function speakChinese(text){
  if(!text||!("speechSynthesis" in window))return;
