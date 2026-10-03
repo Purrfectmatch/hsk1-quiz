@@ -713,10 +713,16 @@ function renderSet4(){
      b.disabled=true
    }
    b.onclick=()=>answerSet4(x,q,idx);
-   s4Options.appendChild(b);
    if(S4.mode==="th-zh"){
+     let wrap=document.createElement("div");
+     wrap.className="quiz-choice-wrap s4-choice-wrap";
+     wrap.appendChild(b);
      let sb=audioButton(x.zh,"🔊");
-     s4Options.appendChild(sb);
+     sb.classList.add("vocab-speak");
+     wrap.appendChild(sb);
+     s4Options.appendChild(wrap);
+   } else {
+     s4Options.appendChild(b);
    }
  });
  s4Feedback.innerHTML=st.answered?
