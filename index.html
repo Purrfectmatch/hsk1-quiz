@@ -698,6 +698,7 @@ function renderSet4(){
  s4Bar.style.width=((S4.pos+1)/Math.max(1,S4.order.length)*100)+"%";
  s4Question.className="question"+(S4.mode==="th-zh"?" thai":"");
  s4Question.textContent=S4.mode==="zh-th"?q.zh:q.th;
+ if(S4.mode==="zh-th"){s4Question.appendChild(audioButton(q.zh,"🔊"));}
  if(S4.mode==="zh-th"&&S4.pinyin){s4QuestionPy.textContent=q.py;s4QuestionPy.classList.remove("hidden")}
  else{s4QuestionPy.textContent="";s4QuestionPy.classList.add("hidden")}
  s4Options.innerHTML="";
@@ -712,11 +713,16 @@ function renderSet4(){
      b.disabled=true
    }
    b.onclick=()=>answerSet4(x,q,idx);
-   s4Options.appendChild(b)
+   s4Options.appendChild(b);
+   if(S4.mode==="th-zh"){
+     let sb=audioButton(x.zh,"🔊");
+     s4Options.appendChild(sb);
+   }
  });
  s4Feedback.innerHTML=st.answered?
    (st.chosen===q.zh?`✅ ถูกต้อง<br><b>${q.zh}</b> <span class="py">${q.py}</span> = ${q.th}`:
    `❌ ยังไม่ถูก<br><b>${q.zh}</b> <span class="py">${q.py}</span> = ${q.th}`):"";
+ if(st.answered){s4Feedback.appendChild(audioButton(q.zh,"🔊"));}
  s4PickerTitle.textContent=`เลือกข้อ • ${S4.review?"ทบทวน":S4.level} (${S4.order.length} ข้อ)`;
  renderSet4Picker()
 }
